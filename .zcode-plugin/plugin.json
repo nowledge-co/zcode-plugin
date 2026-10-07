@@ -1,6 +1,6 @@
 {
   "name": "nowledge-mem-zcode",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Native Nowledge Mem connector for ZCode with MCP, Skills, commands, and lifecycle hooks.",
   "author": {
     "name": "Nowledge Labs",

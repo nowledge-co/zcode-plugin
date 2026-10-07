@@ -4,7 +4,7 @@
 
 ## Session-memory sync
 
-Version 0.2.1 uses ZCode's hook contract:
+Version 0.2.2 uses ZCode's hook contract:
 
 - `SessionStart` reads the Nowledge Mem Context Bundle and injects it as additional context.
 - `UserPromptSubmit` records the submitted prompt for the current session, then performs bounded memory recall for prompts that clearly need prior decisions, history, or connector context.
@@ -75,7 +75,7 @@ marketplace = {
     "description": "Local Nowledge Mem ZCode plugin source",
     "plugins": [{
         "name": "nowledge-mem-zcode",
-        "version": "0.2.0",
+        "version": "0.2.2",
         "description": "Native cross-tool memory for ZCode through Nowledge Mem MCP, Skills, commands, and hooks.",
         "source": {"source": "directory", "path": str(plugin_dir)},
     }],
@@ -119,7 +119,7 @@ New-Item -ItemType Directory -Force -Path $MarketplaceDir | Out-Null
   description = "Local Nowledge Mem ZCode plugin source"
   plugins = @(@{
     name = "nowledge-mem-zcode"
-    version = "0.2.0"
+    version = "0.2.2"
     description = "Native cross-tool memory for ZCode through Nowledge Mem MCP, Skills, commands, and hooks."
     source = @{
       source = "directory"
