@@ -10,6 +10,7 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { spawnSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
 
 const MAX_CONTEXT_CHARS = 6000;
 const RECALL_PROMPT_RE =
@@ -84,6 +85,7 @@ function recordPrompt(input) {
     pendingPromptPath(sessionId),
     `${JSON.stringify({
       role: "user",
+      prompt_id: randomUUID(),
       session_id: sessionId,
       cwd: input.cwd,
       timestamp: hookTimestamp(input),
@@ -156,6 +158,48 @@ function assistantEvent(sessionId, input, content) {
   };
 }
 
+// Issue #5: `nmem t sync` reconciles an existing thread positionally, so
+// every sync must carry the full conversation. Overwriting the per-session
+// transcript with the latest turn made every sync after the first report
+// "unchanged" and silently dropped the turn. Accumulate turns instead, with
+// suffix-aware merge: a Stop can re-assert turns already stored (a retry
+// after a failed sync re-pairs the same pending prompt), and reconstructed
+// assistant timestamps may drift between firings. User prompt identity is
+// persisted at submission so a new turn with identical text still appends.
+function sameTranscriptEvents(a, b) {
+  const role = eventRole(a);
+  if (role !== eventRole(b) || textOf(a) !== textOf(b)) return false;
+  if (role !== "user") return true;
+  if (a.prompt_id || b.prompt_id) return a.prompt_id === b.prompt_id;
+  // Pending prompts captured before prompt IDs were introduced already have
+  // stable timestamps. Complete native transcripts may omit both fields.
+  return a.timestamp === b.timestamp;
+}
+
+function appendTranscriptEvents(path, body) {
+  const incoming = readJsonEvents(body);
+  if (incoming.length === 0) return;
+  let existing = [];
+  try {
+    existing = readJsonEvents(readFileSync(path, "utf8"));
+  } catch {
+    existing = [];
+  }
+
+  const maxOverlap = Math.min(existing.length, incoming.length);
+  let overlap = 0;
+  for (let candidate = maxOverlap; candidate > 0; candidate -= 1) {
+    const suffix = existing.slice(existing.length - candidate);
+    const prefix = incoming.slice(0, candidate);
+    if (suffix.every((event, index) => sameTranscriptEvents(event, prefix[index]))) {
+      overlap = candidate;
+      break;
+    }
+  }
+  const merged = existing.slice(0, existing.length - overlap).concat(incoming);
+  writeFileSync(path, merged.map((event) => JSON.stringify(event)).join("\n").concat("\n"), "utf8");
+}
+
 function completeTranscript(input, body, sessionId) {
   const events = readJsonEvents(body);
   if (events.some((event) => eventRole(event) === "user")) return body;
@@ -167,15 +211,21 @@ function completeTranscript(input, body, sessionId) {
   }
 
   const prompts = readPendingPrompts(sessionId);
-  if (prompts.length === 0 || assistants.length < prompts.length) {
+  if (prompts.length === 0 || assistants.length === 0) return null;
+  // PATCH(issue#5): pair the newest prompts with the newest assistant
+  // messages. Older unpaired prompts belong to turns whose replies are no
+  // longer present in ZCode's compact Stop transcript; returning null here
+  // used to stall the session's sync forever once a single sync failed.
+  const pairCount = Math.min(prompts.length, assistants.length);
+  if (pairCount < prompts.length) {
     process.stderr.write(
-      `[nowledge-mem-zcode] cannot form a complete ZCode conversation: captured ${prompts.length} user prompt(s) and ${assistants.length} assistant response(s)\n`,
+      `[nowledge-mem-zcode] pairing latest ${pairCount} prompt(s); ${prompts.length - pairCount} older prompt(s) have no capturable reply\n`,
     );
-    return null;
   }
-  const unmatchedAssistants = assistants.slice(-prompts.length);
+  const matchedPrompts = prompts.slice(-pairCount);
+  const matchedAssistants = assistants.slice(-pairCount);
 
-  return prompts.flatMap((prompt, index) => [prompt, unmatchedAssistants[index]])
+  return matchedPrompts.flatMap((prompt, index) => [prompt, matchedAssistants[index]])
     .map((event) => JSON.stringify(event))
     .join("\n")
     .concat("\n");
@@ -260,7 +310,9 @@ function copiedTranscriptPath(input) {
   const dir = join(base, "transcripts");
   mkdirSync(dir, { recursive: true });
   const out = join(dir, sessionFileName(sessionId));
-  writeFileSync(out, body, "utf8");
+  // PATCH(issue#5): accumulate turns instead of overwriting, so each sync
+  // carries the full conversation (see appendTranscriptEvents above).
+  appendTranscriptEvents(out, body);
   return out;
 }
 
