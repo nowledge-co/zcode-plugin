@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { bridgeStartupHint } from "./agent-bridge-startup.mjs";
 import {
   appendFileSync,
   mkdtempSync,
@@ -252,15 +253,16 @@ function summarizeContextBundle(payload) {
 function sessionStart(input) {
   const args = ["--json", "context", "--source-app", "zcode"];
   const result = runNmem(args, { timeoutMs: 10000 });
-  if (result.status !== 0 || !result.stdout.trim()) return;
-  try {
-    const payload = JSON.parse(result.stdout);
-    const context = summarizeContextBundle(payload);
-    writeAdditionalContext("SessionStart", context);
-  } catch {
-    // Hook diagnostics belong on stderr; stdout must remain protocol JSON.
-    process.stderr.write("[nowledge-mem-zcode] context output was not JSON\n");
+  let context = "";
+  if (result.status === 0 && result.stdout.trim()) {
+    try {
+      context = summarizeContextBundle(JSON.parse(result.stdout));
+    } catch {
+      // Hook diagnostics belong on stderr; stdout must remain protocol JSON.
+      process.stderr.write("[nowledge-mem-zcode] context output was not JSON\n");
+    }
   }
+  writeAdditionalContext("SessionStart", [bridgeStartupHint(), context].filter(Boolean).join("\n\n"));
 }
 
 function promptRecall(input) {
