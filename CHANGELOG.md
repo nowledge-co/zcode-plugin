@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.3] - 2026-11-20
+
+- Add an opt-in startup hint for the approved Nowledge Bridge Agent inbox.
+
 ## [Unreleased]
 
 ## [0.2.2] - 2026-10-07

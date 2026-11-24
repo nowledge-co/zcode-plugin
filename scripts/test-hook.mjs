@@ -38,7 +38,7 @@ exit "\${NMEM_STUB_STATUS:-0}"
 );
 chmodSync(join(bin, "nmem"), 0o700);
 
-function runHook(input, nmemStatus = 0) {
+function runHook(input, nmemStatus = 0, bridge = {}) {
   const result = spawnSync(process.execPath, [hook], {
     input: JSON.stringify(input),
     encoding: "utf8",
@@ -48,11 +48,24 @@ function runHook(input, nmemStatus = 0) {
       ZCODE_PLUGIN_DATA: pluginData,
       NMEM_CAPTURE_PATH: captured,
       NMEM_STUB_STATUS: String(nmemStatus),
+      NMEM_BRIDGE_INBOX_ON_START: '',
+      NMEM_AGENT_CONTEXT: '',
+      ...bridge,
     },
   });
   assert.equal(result.status, 0, result.stderr);
   return result;
 }
+
+const startup = { hook_event_name: "SessionStart", session_id: "bridge-fixture" };
+assert.equal(runHook(startup, 1).stdout, "");
+const bridge = runHook(startup, 1, {
+  NMEM_BRIDGE_INBOX_ON_START: "1",
+  NMEM_AGENT_CONTEXT: "private-role",
+});
+const bridgeContext = JSON.parse(bridge.stdout).hookSpecificOutput.additionalContext;
+assert.match(bridgeContext, /--resolved-space-id/);
+assert.doesNotMatch(bridgeContext, /private-role/);
 
 function events(path) {
   return readFileSync(path, "utf8").trim().split("\n").map((line) => JSON.parse(line));

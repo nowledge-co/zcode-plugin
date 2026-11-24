@@ -4,7 +4,7 @@
 
 ## Session-memory sync
 
-Version 0.2.2 uses ZCode's hook contract:
+Version 0.2.3 uses ZCode's hook contract:
 
 - `SessionStart` reads the Nowledge Mem Context Bundle and injects it as additional context.
 - `UserPromptSubmit` records the submitted prompt for the current session, then performs bounded memory recall for prompts that clearly need prior decisions, history, or connector context.
@@ -75,7 +75,7 @@ marketplace = {
     "description": "Local Nowledge Mem ZCode plugin source",
     "plugins": [{
         "name": "nowledge-mem-zcode",
-        "version": "0.2.2",
+        "version": "0.2.3",
         "description": "Native cross-tool memory for ZCode through Nowledge Mem MCP, Skills, commands, and hooks.",
         "source": {"source": "directory", "path": str(plugin_dir)},
     }],
@@ -119,7 +119,7 @@ New-Item -ItemType Directory -Force -Path $MarketplaceDir | Out-Null
   description = "Local Nowledge Mem ZCode plugin source"
   plugins = @(@{
     name = "nowledge-mem-zcode"
-    version = "0.2.2"
+    version = "0.2.3"
     description = "Native cross-tool memory for ZCode through Nowledge Mem MCP, Skills, commands, and hooks."
     source = @{
       source = "directory"
@@ -203,3 +203,7 @@ node scripts/validate-plugin.mjs
 ```
 
 The repository also has a static integration contract test. There is currently no verified headless ZCode plugin harness, so a successful static test is not a claim that a given ZCode desktop build fired every hook. After install, run one short session and check that the imported thread appears in Nowledge Mem.
+
+## Bridge mailbox
+
+Set `NMEM_BRIDGE_INBOX_ON_START=1` and an approved `NMEM_AGENT_CONTEXT` before launch. The `SessionStart` hook asks the agent to check one exact-Space inbox page through the configured Cloud `nmem bridge` connection.
