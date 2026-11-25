@@ -27,9 +27,21 @@ It also installs commands:
 
 - `nowledge-mem-status` — check the local CLI or MCP connection
 - `nowledge-mem-sync-now` — import the current hook transcript when `transcript_path` is available
+- `nowledge-mem-import-history` — archive one stored ZCode conversation from SQLite
 - `nowledge-mem-save-handoff` — save an explicit resumable summary
 
-This is a native `plugin + MCP + Skills + commands + hooks` integration. It does not claim pre-compaction capture, historical ZCode archive import, or lossless transcript import outside hook-provided transcripts.
+### Import a stored ZCode conversation
+
+Run `/nowledge-mem-import-history` with a session ID, or run the bundled script from the plugin directory. The script needs Python 3.9 or newer and `nmem` on `PATH` for the import step.
+
+```sh
+python3 scripts/import-history.py --session-id SESSION_ID
+python3 scripts/import-history.py --session-id SESSION_ID --apply
+```
+
+Pass `--db PATH` for a database outside `~/.zcode/cli/db/db.sqlite`. The preview reports the number of messages without contacting Mem. Apply sends the selected session's stored user and assistant text to the configured Mem endpoint. The source remains `zcode`.
+
+Each import is a snapshot. The same session and message content reuse one archive ID. If the stored conversation changes, importing it again creates a new snapshot. Hook-synced threads keep their own IDs and history. Tool calls, reasoning, and attachments are outside the text archive.
 
 ## Manual installation
 
@@ -178,13 +190,13 @@ Paste the generated MCP block into ZCode's own MCP settings and reload the Agent
 | Memory and thread search | Skill/MCP access plus conservative `UserPromptSubmit` recall |
 | Distillation | Guided; search before update/add |
 | Status | CLI fallback plus MCP server tools |
-| Commands | Status, sync-now, and handoff commands |
+| Commands | Status, sync-now, history import, and handoff |
 | Handoff | Explicit structured summary fallback |
 | Hook transcript capture | `Stop` hook copies temporary `transcript_path` JSONL and imports it with `nmem t sync --from zcode` |
 | Pre-compaction capture | Not provided |
-| Historical archive import | Not provided without an explicit hook transcript path |
+| Historical archive import | Explicit SQLite text archive for one session |
 
-A handoff is not a transcript. Do not describe `save-handoff` as lossless session capture. Do not claim transcript import succeeded unless `nmem t sync --from zcode` succeeded.
+A handoff is a summary. Confirm an import using the result from `nmem`.
 
 ## Customize without editing the plugin
 
@@ -200,6 +212,7 @@ Validate the self-contained package without credentials or a running ZCode UI:
 
 ```bash
 node scripts/validate-plugin.mjs
+python3 scripts/test-import-history.py
 ```
 
 The repository also has a static integration contract test. There is currently no verified headless ZCode plugin harness, so a successful static test is not a claim that a given ZCode desktop build fired every hook. After install, run one short session and check that the imported thread appears in Nowledge Mem.

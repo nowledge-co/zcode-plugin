@@ -17,6 +17,7 @@ const expectedSkills = [
   "status",
 ];
 const expectedCommands = [
+  "nowledge-mem-import-history.md",
   "nowledge-mem-save-handoff.md",
   "nowledge-mem-status.md",
   "nowledge-mem-sync-now.md",
