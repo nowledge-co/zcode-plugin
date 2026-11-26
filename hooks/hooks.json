@@ -8,8 +8,22 @@
           {
             "type": "process",
             "command": "node",
-            "args": ["${ZCODE_PLUGIN_ROOT}/hooks/zcode-mem-hook.mjs"],
+            "args": [
+              "${ZCODE_PLUGIN_ROOT}/hooks/zcode-mem-hook.mjs"
+            ],
             "timeoutMs": 10000
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "process",
+            "command": "node",
+            "args": [
+              "${ZCODE_PLUGIN_ROOT}/hooks/bridge-notice.mjs"
+            ],
+            "timeoutMs": 2000
           }
         ]
       }
@@ -20,8 +34,22 @@
           {
             "type": "process",
             "command": "node",
-            "args": ["${ZCODE_PLUGIN_ROOT}/hooks/zcode-mem-hook.mjs"],
+            "args": [
+              "${ZCODE_PLUGIN_ROOT}/hooks/zcode-mem-hook.mjs"
+            ],
             "timeoutMs": 10000
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "process",
+            "command": "node",
+            "args": [
+              "${ZCODE_PLUGIN_ROOT}/hooks/bridge-notice.mjs"
+            ],
+            "timeoutMs": 2000
           }
         ]
       }
@@ -32,7 +60,9 @@
           {
             "type": "process",
             "command": "node",
-            "args": ["${ZCODE_PLUGIN_ROOT}/hooks/zcode-mem-hook.mjs"],
+            "args": [
+              "${ZCODE_PLUGIN_ROOT}/hooks/zcode-mem-hook.mjs"
+            ],
             "timeoutMs": 20000
           }
         ]
