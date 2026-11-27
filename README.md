@@ -150,7 +150,7 @@ For remote SSH/WSL workspaces, local plugins do not automatically move with the 
 
 ## Mem connection
 
-The bundled MCP server starts `nmem mcp` on the computer running the agent. Install nmem 0.10.125 or later there, then run `nmem --json status` to check its workspace. After changing workspaces, start a new agent session. No key is written to the plugin. If ZCode runs remotely, install and configure the CLI in that remote environment.
+The bundled MCP server starts `nmem mcp` on the computer running the agent. Install nmem 0.10.126 or later there, then run `nmem --json status` to check its workspace. After changing workspaces, start a new agent session. No key is written to the plugin. If ZCode runs remotely, install and configure the CLI in that remote environment.
 
 ## Capability contract
 
