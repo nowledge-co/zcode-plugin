@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.4]
+
+- MCP follows the workspace selected by nmem on each new session. Requires nmem 0.10.125 or later.
+
 ## [0.2.3] - 2026-11-20
 
 - Add an opt-in startup hint for the approved Nowledge Bridge Agent inbox.

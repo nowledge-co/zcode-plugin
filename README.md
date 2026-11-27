@@ -4,7 +4,7 @@
 
 ## Session-memory sync
 
-Version 0.2.3 uses ZCode's hook contract:
+Version 0.2.4 uses ZCode's hook contract:
 
 - `SessionStart` reads the Nowledge Mem Context Bundle and injects it as additional context.
 - `UserPromptSubmit` records the submitted prompt for the current session, then performs bounded memory recall for prompts that clearly need prior decisions, history, or connector context.
@@ -75,7 +75,7 @@ marketplace = {
     "description": "Local Nowledge Mem ZCode plugin source",
     "plugins": [{
         "name": "nowledge-mem-zcode",
-        "version": "0.2.3",
+        "version": "0.2.4",
         "description": "Native cross-tool memory for ZCode through Nowledge Mem MCP, Skills, commands, and hooks.",
         "source": {"source": "directory", "path": str(plugin_dir)},
     }],
@@ -119,7 +119,7 @@ New-Item -ItemType Directory -Force -Path $MarketplaceDir | Out-Null
   description = "Local Nowledge Mem ZCode plugin source"
   plugins = @(@{
     name = "nowledge-mem-zcode"
-    version = "0.2.3"
+    version = "0.2.4"
     description = "Native cross-tool memory for ZCode through Nowledge Mem MCP, Skills, commands, and hooks."
     source = @{
       source = "directory"
@@ -150,25 +150,7 @@ For remote SSH/WSL workspaces, local plugins do not automatically move with the 
 
 ## Mem connection
 
-The package's default `.mcp.json` uses the local Nowledge Mem Desktop endpoint:
-
-```text
-http://127.0.0.1:14242/mcp/
-```
-
-Start Nowledge Mem Desktop and verify the CLI when using local mode:
-
-```bash
-nmem --json status
-```
-
-For Cloud, Access Anywhere, self-hosted, or another remote endpoint, configure the ZCode-owned MCP settings rather than editing the installed package. Keep the endpoint and credential in the user's secure Nowledge Mem client configuration or environment (`NMEM_API_URL` and `NMEM_API_KEY`), then generate the host-owned MCP block without putting the key in shell history:
-
-```bash
-nmem config mcp show --host zcode
-```
-
-Paste the generated MCP block into ZCode's own MCP settings and reload the Agent runtime. API keys are intentionally absent from this repository and must not be passed as command-line arguments or written to logs. Direct MCP clients do not automatically inherit `~/.nowledge-mem/config.json`.
+The bundled MCP server starts `nmem mcp` on the computer running the agent. Install nmem 0.10.125 or later there, then run `nmem --json status` to check its workspace. After changing workspaces, start a new agent session. No key is written to the plugin. If ZCode runs remotely, install and configure the CLI in that remote environment.
 
 ## Capability contract
 
