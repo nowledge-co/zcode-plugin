@@ -48,8 +48,8 @@ function validateManifest(manifest) {
     throw new Error("manifest.name does not match the ZCode name format");
   }
   requireString(manifest.version, "manifest.version");
-  if (manifest.version !== "0.2.3") {
-    throw new Error("manifest.version must be 0.2.3");
+  if (manifest.version !== "0.2.4") {
+    throw new Error("manifest.version must be 0.2.4");
   }
   if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/.test(manifest.version)) {
     throw new Error("manifest.version must be a semantic version");
@@ -102,14 +102,9 @@ function validateMcp(mcp) {
     throw new Error(".mcp.json must declare exactly the nowledge-mem server");
   }
   const server = mcp.mcpServers["nowledge-mem"];
-  if (!server || server.type !== "http") {
-    throw new Error("nowledge-mem MCP server must use the ZCode http transport");
-  }
-  if (server.url !== "http://127.0.0.1:14242/mcp/") {
-    throw new Error("nowledge-mem.url must use the local desktop endpoint");
-  }
-  if (!server.headers || Object.keys(server.headers).length !== 1 || server.headers.APP !== "ZCode") {
-    throw new Error('nowledge-mem.headers must be exactly {"APP":"ZCode"}');
+  if (server?.type !== "stdio" || server.command !== "nmem" || JSON.stringify(server.args) !== '["mcp"]' ||
+      server.env?.NMEM_MCP_APP !== "ZCode" || "url" in server || "headers" in server) {
+    throw new Error("MCP must use nmem mcp with ZCode attribution and no stored URL or credential");
   }
   const serialized = JSON.stringify(mcp).toLowerCase();
   for (const forbidden of ["api-key", "api_key", "authorization", "bearer", "password", "secret"]) {
