@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.4 - 2026-11-26
+
+- Supply real session correlation and consume local Bridge notices before user prompts. Ongoing identity-mailbox subscriptions require explicit user intent; the existing startup inbox scope is unchanged.
+
 ## [0.2.3] - 2026-11-20
 
 - Add an opt-in startup hint for the approved Nowledge Bridge Agent inbox.

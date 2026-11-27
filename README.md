@@ -4,7 +4,7 @@
 
 ## Session-memory sync
 
-Version 0.2.3 uses ZCode's hook contract:
+Version 0.2.4 uses ZCode's hook contract:
 
 - `SessionStart` reads the Nowledge Mem Context Bundle and injects it as additional context.
 - `UserPromptSubmit` records the submitted prompt for the current session, then performs bounded memory recall for prompts that clearly need prior decisions, history, or connector context.
@@ -207,3 +207,9 @@ The repository also has a static integration contract test. There is currently n
 ## Bridge mailbox
 
 Set `NMEM_BRIDGE_INBOX_ON_START=1` and an approved `NMEM_AGENT_CONTEXT` before launch. The `SessionStart` hook asks the agent to check one exact-Space inbox page through the configured Cloud `nmem bridge` connection.
+
+## Bridge mailbox notices
+
+For an explicitly subscribed actual session, `UserPromptSubmit` consumes a bounded local Bridge hint. It does not fetch or acknowledge mail, wake an idle task, or enable native session/reply routing. Startup inbox opt-in does not authorize ongoing subscriptions.
+
+ZCode currently has no `SessionEnd` hook ([official events](https://zcode.z.ai/en/docs/hooks), checked 2026-11-26). Before retiring a subscribed session, run `nmem bridge notices unsubscribe --host=zcode --session-id=<actual-session-id> --ended`. `Stop` is a turn boundary and must not perform this cleanup. A resumed session can subscribe again with its real identifier.
